@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
 	"sync"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -79,6 +80,20 @@ func (m *DbManager) Open(name, driverName, dataSourceName string) error {
 	DbInfo, err := Open(name, driverName, dataSourceName)
 	m.data[name] = DbInfo
 	return err
+}
+
+func (m *DbManager) OpenDB(name, driverName string, db *sql.DB) error {
+	if m.Exist(name){
+		return ErrManagerNameExist
+	}
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	if m.Exist(name) {
+		return ErrManagerNameExist
+	}
+	DbInfo := OpenDB(name, driverName, db)
+	m.data[name] = DbInfo
+	return nil
 }
 
 func NewDbManager() *DbManager {

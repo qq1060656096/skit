@@ -33,7 +33,7 @@ func Open(name, driverName, dataSourceName string) (*DbInfo, error) {
 	return dbInfo, nil
 }
 
-func OpenDb(name, driverName string, db *sql.DB) *DbInfo {
+func OpenDB(name, driverName string, db *sql.DB) *DbInfo {
 	dbInfo := &DbInfo{
 		name: name,
 		driverName: driverName,
