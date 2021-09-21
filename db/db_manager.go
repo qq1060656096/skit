@@ -49,12 +49,13 @@ func (m *DbManager) Add(dbInfo *DbInfo) error {
 }
 
 func (m *DbManager) Remove(name string) (*DbInfo, error) {
-	if !m.Exist(name){
-		return nil, errDbManagerNameNotFound
+	dbInfo, err := m.Get(name)
+	if err != nil {
+		return nil, err
 	}
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	dbInfo, err := m.Get(name)
+	dbInfo, err = m.Get(name)
 	if err != nil {
 		return nil, err
 	}
