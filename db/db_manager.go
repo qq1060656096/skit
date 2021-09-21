@@ -19,9 +19,9 @@ const (
 
 var DefaultDbManger = NewDbManager()
 
-var ErrManagerNameNotFound = errors.New("db: db manager name not found")
-var ErrManagerNameExist = errors.New("db: db manager name exist")
-var ErrManagerNameOpen = errors.New("db: db manager name open error")
+var errDbManagerNameNotFound = errors.New("db: db manager name not found")
+var errDbManagerNameExist = errors.New("db: db manager name exist")
+var errDbManagerNameOpen = errors.New("db: db manager name open error")
 
 type DbManager struct {
 	mutex sync.Mutex
@@ -35,20 +35,22 @@ func (m *DbManager) Exist(name string) bool {
 	return false
 }
 
-func (m *DbManager) Add(dbInfo *DbInfo) {
+func (m *DbManager) Add(dbInfo *DbInfo) error {
 	if m.Exist(dbInfo.name){
-		return
+		return errDbManagerNameExist
 	}
 	m.mutex.Lock()
-	if !m.Exist(dbInfo.name) {
-		m.data[dbInfo.name] = dbInfo
+	defer m.mutex.Unlock()
+	if m.Exist(dbInfo.name){
+		return errDbManagerNameExist
 	}
-	m.mutex.Unlock()
+	m.data[dbInfo.name] = dbInfo
+	return nil
 }
 
 func (m *DbManager) Remove(name string) (*DbInfo, error) {
 	if !m.Exist(name){
-		return nil, ErrManagerNameNotFound
+		return nil, errDbManagerNameNotFound
 	}
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -65,17 +67,17 @@ func (m *DbManager) Get(name string) (*DbInfo, error) {
 	if dbInfo, ok := m.data[name]; ok {
 		return dbInfo, nil
 	}
-	return nil, ErrManagerNameNotFound
+	return nil, errDbManagerNameNotFound
 }
 
 func (m *DbManager) Open(name, driverName, dataSourceName string) error {
 	if m.Exist(name){
-		return ErrManagerNameExist
+		return errDbManagerNameExist
 	}
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if m.Exist(name) {
-		return ErrManagerNameExist
+		return errDbManagerNameExist
 	}
 	DbInfo, err := Open(name, driverName, dataSourceName)
 	m.data[name] = DbInfo
@@ -84,12 +86,12 @@ func (m *DbManager) Open(name, driverName, dataSourceName string) error {
 
 func (m *DbManager) OpenDB(name, driverName string, db *sql.DB) error {
 	if m.Exist(name){
-		return ErrManagerNameExist
+		return errDbManagerNameExist
 	}
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if m.Exist(name) {
-		return ErrManagerNameExist
+		return errDbManagerNameExist
 	}
 	DbInfo := OpenDB(name, driverName, db)
 	m.data[name] = DbInfo
