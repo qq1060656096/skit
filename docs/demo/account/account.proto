@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package="demo/account/v1";
+package skit.demo.v1;
+
+service AccountService {
+  rpc RegisterAccount(RegisterAccountRequest) returns (Account) {}
+}
+
+message RegisterAccountRequest {
+  string Name = 1;
+  string Pass = 2;
+  string Nickname = 3;
+}
+
+message Account {
+  string Name = 1;
+  string Nickname = 3;
+}
